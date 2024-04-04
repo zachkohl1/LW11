@@ -79,15 +79,18 @@ int main(int argc, char** argv)
 	// to console and back to source
 	char* buffer = calloc(MAX_MESSAGE,sizeof(char));
 	char* sendBuffer = calloc(MAX_MESSAGE,sizeof(char));
-	char* echoTag = "Dan says ";
 	int bytes_read;
     struct sockaddr_in from;
 	socklen_t from_len;
 	int echoed;
 	
+
+	/**
+	 * @TODO: Client give a read request, server should look for read-request and file from filename, then send data back
+	*/
     while (1) 
 	{
-		from_len = sizeof(from);
+		from_len = sizeof(from);s
 		
 		// read datagram and put into buffer
 		bytes_read = recvfrom( sock ,buffer, MAX_MESSAGE,
@@ -110,14 +113,6 @@ int main(int argc, char** argv)
 				buffer[bytes_read] = '\0';
 			else
 				buffer[MAX_MESSAGE-1] = '\0';
-				
-			// put message to console
-			printf("Message: %s\n",buffer);
-
-			strcpy(sendBuffer,echoTag);
-			printf("Echotag: %s\n",sendBuffer);
-			strcat(sendBuffer,buffer);
-			printf("Sendmessage: %s\n",sendBuffer);
 
 			echoed = sendto(sock, sendBuffer, bytes_read+9, 0,
 				(struct sockaddr *)&from, from_len);

@@ -9,9 +9,9 @@
 #include <sys/time.h>
 #include <errno.h>
 
-#define DEFAULT_BLOCK_SIZE_BYTES    (int)512
+#define DEFAULT_DATA_SIZE_BYTES     (int)512
 #define TFTP_PORT                   (int)69
-#define LAB_BROADCAST               (in_addr_t) 0xC0A818FF
+#define LAB_BROADCAST               (in_addr_t) 0xC0A818FFq
 #define MODE                        (char*)"octet"
 
 /* TFTP op-codes */
@@ -33,8 +33,8 @@ int main(int argc, char* argv[])
     // Socket & IP vars
     struct sockaddr_in server;
     int sock;   // Socket desriptor
-    char* file_name;  // -f <filename>
-    char buffer[DEFAULT_BLOCK_SIZE_BYTES] = {'\0'};
+    char* file_path;  // -f <filename>
+    char buffer[DEFAULT_DATA_SIZE_BYTES] = {'\0'};
     int data_packets_recieved = 0;
     int retry_count = 0;
     
@@ -62,7 +62,7 @@ int main(int argc, char* argv[])
                 printf("Connecting to port: %d\n", port);
                 break;
             case 'f':
-                file_name = optarg;
+                file_path = optarg;
                 break;
             case 'h':
                 help();
@@ -79,13 +79,13 @@ int main(int argc, char* argv[])
     memcpy(buffer, &opcode, sizeof(uint16_t));
 
     // Put file name into packet
-    strcat(buffer + sizeof(uint16_t), file_name);
+    strcat(buffer + sizeof(uint16_t), file_path);
 
     // Put octet mode into buffer
-    strcat(buffer+sizeof(uint16_t) + strlen(file_name)+1, MODE);
+    strcat(buffer+sizeof(uint16_t) + strlen(file_path)+1, MODE);
 
     // Calculate packet size
-    int packet_size = sizeof(uint16_t) + strlen(file_name) + 1 + strlen(MODE) + 1;
+    int packet_size = sizeof(uint16_t) + strlen(file_path) + 1 + strlen(MODE) + 1;
     /* End of RRQ packet setup*/
 
 
@@ -102,7 +102,7 @@ int main(int argc, char* argv[])
     int sent = sendto(sock,buffer, packet_size, 0, (struct sockaddr *)&server, server_len);
 
     /* Create a file pointer to write the binary data from the UDP serve to local disk */
-    FILE *file = fopen(file_name, "wb");
+    FILE *file = fopen(file_path, "wb");
     if (!file) {
         perror("fopen");
         close(sock);
@@ -132,7 +132,7 @@ int main(int argc, char* argv[])
         socklen_t server_len = sizeof(server);
 
         // Attempt to recieve data from the UDP server
-        bytes_received = recvfrom(sock, buffer, DEFAULT_BLOCK_SIZE_BYTES, 0, (struct sockaddr *)&server, &server_len);
+        bytes_received = recvfrom(sock, buffer, DEFAULT_DATA_SIZE_BYTES, 0, (struct sockaddr *)&server, &server_len);
 
         /* If the timeout was triggered, make sure that it was from expected flags */
         if (bytes_received == -1) {
@@ -160,7 +160,7 @@ int main(int argc, char* argv[])
         // Make sure there is a null terminator before trying to print
         // to console.  There is no expectation null would be included
         // in UDP payload.
-        (bytes_received < DEFAULT_BLOCK_SIZE_BYTES) ? (buffer[bytes_received] = '\0') : (buffer[DEFAULT_BLOCK_SIZE_BYTES - 1] = '\0');
+        (bytes_received < DEFAULT_DATA_SIZE_BYTES) ? (buffer[bytes_received] = '\0') : (buffer[DEFAULT_DATA_SIZE_BYTES - 1] = '\0');
 
         // Only look at Least-significant-BYTE for opcode since should never be larger than 1 byte in value
         opcode = ntohs(*(uint16_t*)&buffer[1]);        

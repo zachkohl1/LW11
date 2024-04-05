@@ -11,7 +11,7 @@
 
 #define DEFAULT_DATA_SIZE_BYTES     (int)512
 #define TFTP_PORT                   (int)69
-#define LAB_BROADCAST               (in_addr_t) 0xC0A818FFq
+#define LAB_BROADCAST               (in_addr_t)0xC0A818FF
 #define MODE                        (char*)"octet"
 
 /* TFTP op-codes */
@@ -23,8 +23,10 @@
 #define TIMEOUT_SECS                (int) 1
 #define MAX_RETRIES                 (int) 5
 
-static void help(void);
+static int data_recieved = 0;
 
+
+static void help(void);
 int main(int argc, char* argv[])
 {
     // Set port to 69
@@ -33,13 +35,15 @@ int main(int argc, char* argv[])
     // Socket & IP vars
     struct sockaddr_in server;
     int sock;   // Socket desriptor
-    char* file_path;  // -f <filename>
-    char buffer[DEFAULT_DATA_SIZE_BYTES] = {'\0'};
+    char* file_path = NULL;  // -f <filename>
+    uint8_t buffer[DEFAULT_DATA_SIZE_BYTES] = {'\0'};
     int data_packets_recieved = 0;
     int retry_count = 0;
+    int all_data_recieved = 0;
     
     server.sin_addr.s_addr = htonl(LAB_BROADCAST);
     server.sin_port = htons(port);
+    server.sin_family = AF_INET;
 
     char c;     // - char
 
@@ -47,7 +51,7 @@ int main(int argc, char* argv[])
     // -g for tftp get
     // -i for server ip address in dotted decimal
     // -f for file name
-    while ((c = getopt(argc, argv, "h:i:f:")) != -1)
+    while ((c = getopt(argc, argv, "hi:f:"))!= -1)
     {
         switch (c)
         {
@@ -71,6 +75,11 @@ int main(int argc, char* argv[])
          }
     }
 
+    if (file_path == NULL) {
+        fprintf(stderr, "Error: -f option is required\n");
+        exit(1);
+    }
+
     /* Always a RRQ when first run */
     // Set client mode to octet
     uint16_t opcode = htons(OP_RRQ);
@@ -79,10 +88,10 @@ int main(int argc, char* argv[])
     memcpy(buffer, &opcode, sizeof(uint16_t));
 
     // Put file name into packet
-    strcat(buffer + sizeof(uint16_t), file_path);
+    strncat(buffer + sizeof(uint16_t), file_path, sizeof(buffer) - sizeof(uint16_t) - 1);
 
     // Put octet mode into buffer
-    strcat(buffer+sizeof(uint16_t) + strlen(file_path)+1, MODE);
+    strncat(buffer+sizeof(uint16_t) + strlen(file_path)+1, MODE, sizeof(buffer) - sizeof(uint16_t) - strlen(file_path) - 1);
 
     // Calculate packet size
     int packet_size = sizeof(uint16_t) + strlen(file_path) + 1 + strlen(MODE) + 1;
@@ -99,7 +108,10 @@ int main(int argc, char* argv[])
     socklen_t server_len = sizeof(server);
 
     // Send initial RRQ
-    int sent = sendto(sock,buffer, packet_size, 0, (struct sockaddr *)&server, server_len);
+    if (sendto(sock,buffer, packet_size, 0, (struct sockaddr *)&server, server_len) < 0) {
+        perror("Error sending RRQ packet");
+        exit(1);
+    }
 
     /* Create a file pointer to write the binary data from the UDP serve to local disk */
     FILE *file = fopen(file_path, "wb");
@@ -110,6 +122,8 @@ int main(int argc, char* argv[])
     }
 
     /* Set a 1s timeout */
+    // Taken from https://stackoverflow.com/questions/13547721/udp-socket-set-timeout
+    // Added interror if statement commands to execute
     struct timeval tv;
     tv.tv_sec = TIMEOUT_SECS;
     tv.tv_usec = 0;
@@ -122,7 +136,7 @@ int main(int argc, char* argv[])
     }
 
     // Create a temp array to hold last ACK
-    char* prev_ack = NULL;
+    uint8_t* prev_ack = NULL;
 
     // Bytes recieved by server
     int bytes_received = 0;
@@ -132,27 +146,29 @@ int main(int argc, char* argv[])
         socklen_t server_len = sizeof(server);
 
         // Attempt to recieve data from the UDP server
+        memset(buffer, 0, DEFAULT_DATA_SIZE_BYTES);
         bytes_received = recvfrom(sock, buffer, DEFAULT_DATA_SIZE_BYTES, 0, (struct sockaddr *)&server, &server_len);
+        printf("Bytes recieved: %i\n", bytes_received);
 
         /* If the timeout was triggered, make sure that it was from expected flags */
         if (bytes_received == -1) {
             if (errno == EAGAIN || errno == EWOULDBLOCK) {
                 printf("Timeout occurred. No data received.\n");
+                data_recieved=0;
+
 
                 // Resend ACK
-                sendto(sock, prev_ack, sizeof(uint16_t) + sizeof(uint16_t), 0, (struct sockaddr*)&server, server_len);
+                if (prev_ack) {
+                    sendto(sock, prev_ack, sizeof(uint16_t) + sizeof(uint16_t), 0, (struct sockaddr*)&server, server_len);
+                }
                 retry_count++;
 
                 continue; // Continue to the next iteration of the loop
             } else {
                 perror("Recieve Error\n");
-                close(sock);
                 fclose(file);
-                if(prev_ack)
-                {
-                    free(prev_ack);
-
-                }
+                close(sock);
+                free(prev_ack);
                 return 1;
             }
         }
@@ -163,11 +179,13 @@ int main(int argc, char* argv[])
         (bytes_received < DEFAULT_DATA_SIZE_BYTES) ? (buffer[bytes_received] = '\0') : (buffer[DEFAULT_DATA_SIZE_BYTES - 1] = '\0');
 
         // Only look at Least-significant-BYTE for opcode since should never be larger than 1 byte in value
-        opcode = ntohs(*(uint16_t*)&buffer[1]);        
+        opcode = ntohs(*(uint16_t*)&buffer[0]);     
+        printf("opcode: %d\n", opcode);   
         
         switch(opcode)
         {
             case OP_ERROR:
+                data_recieved=0;
                 // Get error code and error message
                 uint16_t error_code = ntohs(*(uint16_t*)&buffer[sizeof(uint16_t)]);
                 char* error_msg = &buffer[sizeof(uint16_t) + sizeof(uint16_t)];
@@ -177,44 +195,85 @@ int main(int argc, char* argv[])
                 break;
 
             case OP_DATA:
+                retry_count = 0;
+                data_recieved=1;
                 data_packets_recieved++;
-
-                uint16_t block_number = (ntohs(buffer[2]) << 8) | ntohs(buffer[3]); // Combine the two block number bytes
+                
+                uint16_t block_number = ntohs(buffer[3]<<8)|(ntohs(buffer[2])); // Combine the two block number bytes
                 uint16_t data_size = bytes_received - sizeof(uint16_t) - sizeof(uint16_t);
+                
 
                 /* Display Progress */
                 printf("Block: %i\t Data Size: %i\n", block_number,data_size);
 
-                /* Write data to local disk */
-                fwrite(buffer + sizeof(uint16_t) + sizeof(uint16_t), 1, data_size, file);
+                if(data_size < DEFAULT_DATA_SIZE_BYTES-4)
+                {
+                    all_data_recieved = 1;
+                }
 
+                printf("Data size: %i\n", data_size);
+                /* Write data to local disk */
+                size_t bytes_written = fwrite(buffer + sizeof(uint16_t) + sizeof(uint16_t), 1, data_size, file);
+                if (bytes_written != data_size) {
+                    perror("Error writing to file");
+                    fclose(file);
+                    close(sock);
+                    free(prev_ack);
+                    return 1;
+                }
+                printf("Bytes written: %li\n", bytes_written);
+                
                 /* Data recieved from server, so send ACK back */
                 // Only opcode is changed
-                buffer[0] = 0;
-                buffer[1] = htons(OP_ACK);
+                uint16_t ack_opcode = htons(OP_ACK);
+                memcpy(buffer, &ack_opcode, sizeof(uint16_t));
 
                 // Create copy of ACK packet in case of timeout and retransmission
-                prev_ack = (char*)calloc(sizeof(buffer[0]) + sizeof(buffer[1]) + 1, sizeof(char));
+                if (prev_ack) {
+                    free(prev_ack);
+                }
 
-                /* ACK data packet */
-                sendto(sock, buffer, sizeof(uint16_t) + sizeof(uint16_t), 0, (struct sockaddr*)&server, server_len);
+                prev_ack = (uint8_t*)calloc(sizeof(buffer[0]) + sizeof(buffer[1]) + 1, sizeof(uint8_t));
+                memcpy(prev_ack, buffer, sizeof(buffer[0]) + sizeof(buffer[1]) + 1);
+
+                // Set the block number in the ACK packet
+                uint16_t ack_block_number = htons(block_number);
+                memcpy(prev_ack + sizeof(uint16_t), &ack_block_number, sizeof(uint16_t));
+
+                if (sendto(sock, prev_ack, sizeof(uint16_t) + sizeof(uint16_t), 0, (struct sockaddr*)&server, server_len) < 0) {
+                    perror("Error sending ACK packet");
+                    fclose(file);
+                    close(sock);
+                    free(prev_ack);
+                    return 1;
+                }
+
+
+                printf("opcode: %d\n", ntohs(*(uint16_t*)&prev_ack[0]));
+                printf("Block Number: %d\n", ntohs(*(uint16_t*)&prev_ack[2]));
                 break;
             default:
                 perror("Unsupported opcode from server\n");
                 fclose(file);
                 close(sock);
-
-                if(prev_ack)
-                {
-                    free(prev_ack);
-
-                }
+                free(prev_ack);
                 return 1;
         }
 
         // Print amount of bytes sent and the IP of the server it sent it to
-        printf("Sent %d bytes to %s\n",packet_size,inet_ntoa(server.sin_addr));
-    } while(bytes_received != 0 && retry_count < MAX_RETRIES);
+        //printf("Sent %d bytes to %s\n",packet_size,inet_ntoa(server.sin_addr));
+    } while(retry_count < MAX_RETRIES && (bytes_received > 0 || bytes_received == -1) && !all_data_recieved);
+
+    all_data_recieved = 0;
+
+    
+
+    /* Delete File */
+    if(!data_recieved && retry_count >= MAX_RETRIES)
+    {
+        (!remove(file_path))? printf("Deleted succesfully\n"): printf("Unable to delete the file\n");
+    }
+
 
     // Close file
     fclose(file);
@@ -229,11 +288,16 @@ int main(int argc, char* argv[])
     }
 
 	// done
-	return 1;
+	return 0;
 }
 
 
 static void help(void)
 {
     printf("-i <ip of udp server> -p <port to listen> -f <file name> -h (print help)\n");
+    printf("-f option is required to specify the file name to download\n");
+    printf("-i option is optional and can be used to specify the IP address of the UDP server\n");
+    printf("-p option is optional and can be used to specify the port number to listen on\n");
+    printf("If -i and -p options are not specified, the program will use the default IP address and port number\n");
+    printf("The program will download the specified file from the UDP server using the TFTP protocol\n");
 }

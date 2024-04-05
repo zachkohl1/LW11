@@ -1,0 +1,172 @@
+==5166== Memcheck, a memory error detector
+==5166== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+==5166== Using Valgrind-3.18.1-42b08ed5bd-20211015 and LibVEX; rerun with -h for copyright info
+==5166== Command: ./client -i 192.168.1.11 -f bee_movie.bin
+==5166== Parent PID: 1812
+==5166== 
+--5166-- 
+--5166-- Valgrind options:
+--5166--    --leak-check=full
+--5166--    --show-leak-kinds=all
+--5166--    --track-origins=yes
+--5166--    --verbose
+--5166--    --log-file=valgrind-out.txt
+--5166-- Contents of /proc/version:
+--5166--   Linux version 4.4.0-22621-Microsoft (Microsoft@Microsoft.com) (gcc version 5.4.0 (GCC) ) #2506-Microsoft Fri Jan 01 08:00:00 PST 2016
+--5166-- 
+--5166-- Arch and hwcaps: AMD64, LittleEndian, amd64-cx16-lzcnt-rdtscp-sse3-ssse3-avx-avx2-bmi-f16c-rdrand-rdseed
+--5166-- Page sizes: currently 4096, max supported 4096
+--5166-- Valgrind library directory: /usr/libexec/valgrind
+--5166-- Reading syms from /home/kohlmanz/networking_dev/LW11/client
+--5166-- Reading syms from /usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2
+--5166--   Considering /usr/lib/debug/.build-id/cc/cdd41e22e25f77a8cda3d045c57ffdb01a9793.debug ..
+--5166--   .. build-id is valid
+--5166-- Reading syms from /usr/libexec/valgrind/memcheck-amd64-linux
+--5166--    object doesn't have a symbol table
+--5166--    object doesn't have a dynamic symbol table
+--5166-- Scheduler: using generic scheduler lock implementation.
+--5166-- Reading suppressions file: /usr/libexec/valgrind/default.supp
+==5166== embedded gdbserver: reading from /tmp/vgdb-pipe-from-vgdb-to-5166-by-kohlmanz-on-???
+==5166== embedded gdbserver: writing to   /tmp/vgdb-pipe-to-vgdb-from-5166-by-kohlmanz-on-???
+==5166== embedded gdbserver: shared mem   /tmp/vgdb-pipe-shared-mem-vgdb-5166-by-kohlmanz-on-???
+==5166== 
+==5166== TO CONTROL THIS PROCESS USING vgdb (which you probably
+==5166== don't want to do, unless you know exactly what you're doing,
+==5166== or are doing some strange experiment):
+==5166==   /usr/bin/vgdb --pid=5166 ...command...
+==5166== 
+==5166== TO DEBUG THIS PROCESS USING GDB: start GDB like this
+==5166==   /path/to/gdb ./client
+==5166== and then give GDB the following command
+==5166==   target remote | /usr/bin/vgdb --pid=5166
+==5166== --pid is optional if only one valgrind process is running
+==5166== 
+==5166== error calling PR_SET_PTRACER, vgdb might block
+--5166-- REDIR: 0x402aa40 (ld-linux-x86-64.so.2:strlen) redirected to 0x580bcec2 (???)
+--5166-- REDIR: 0x402a810 (ld-linux-x86-64.so.2:index) redirected to 0x580bcedc (???)
+--5166-- Reading syms from /usr/libexec/valgrind/vgpreload_core-amd64-linux.so
+--5166--    object doesn't have a symbol table
+--5166-- Reading syms from /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so
+--5166--    object doesn't have a symbol table
+==5166== WARNING: new redirection conflicts with existing -- ignoring it
+--5166--     old: 0x0402aa40 (strlen              ) R-> (0000.0) 0x580bcec2 ???
+--5166--     new: 0x0402aa40 (strlen              ) R-> (2007.0) 0x0484ee30 strlen
+--5166-- REDIR: 0x4027220 (ld-linux-x86-64.so.2:strcmp) redirected to 0x484fcd0 (strcmp)
+--5166-- REDIR: 0x402afa0 (ld-linux-x86-64.so.2:mempcpy) redirected to 0x4853840 (mempcpy)
+--5166-- Reading syms from /usr/lib/x86_64-linux-gnu/libc.so.6
+--5166--   Considering /usr/lib/debug/.build-id/20/3de0ae33b53fee1578b117cb4123e85d0534f0.debug ..
+--5166--   .. build-id is valid
+==5166== WARNING: new redirection conflicts with existing -- ignoring it
+--5166--     old: 0x04909c60 (memalign            ) R-> (1011.0) 0x0484e080 memalign
+--5166--     new: 0x04909c60 (memalign            ) R-> (1017.0) 0x0484e050 aligned_alloc
+==5166== WARNING: new redirection conflicts with existing -- ignoring it
+--5166--     old: 0x04909c60 (memalign            ) R-> (1011.0) 0x0484e080 memalign
+--5166--     new: 0x04909c60 (memalign            ) R-> (1017.0) 0x0484e020 aligned_alloc
+==5166== WARNING: new redirection conflicts with existing -- ignoring it
+--5166--     old: 0x04909c60 (memalign            ) R-> (1011.0) 0x0484e080 memalign
+--5166--     new: 0x04909c60 (memalign            ) R-> (1017.0) 0x0484e050 aligned_alloc
+==5166== WARNING: new redirection conflicts with existing -- ignoring it
+--5166--     old: 0x04909c60 (memalign            ) R-> (1011.0) 0x0484e080 memalign
+--5166--     new: 0x04909c60 (memalign            ) R-> (1017.0) 0x0484e020 aligned_alloc
+--5166-- REDIR: 0x490c720 (libc.so.6:strnlen) redirected to 0x483f220 (_vgnU_ifunc_wrapper)
+--5166-- REDIR: 0x490c9e0 (libc.so.6:strpbrk) redirected to 0x483f220 (_vgnU_ifunc_wrapper)
+--5166-- REDIR: 0x490c2e0 (libc.so.6:strcmp) redirected to 0x483f220 (_vgnU_ifunc_wrapper)
+--5166-- REDIR: 0x492acd0 (libc.so.6:wcsnlen) redirected to 0x483f220 (_vgnU_ifunc_wrapper)
+--5166-- REDIR: 0x490d6d0 (libc.so.6:memset) redirected to 0x483f220 (_vgnU_ifunc_wrapper)
+--5166-- REDIR: 0x4929540 (libc.so.6:wcslen) redirected to 0x483f220 (_vgnU_ifunc_wrapper)
+--5166-- REDIR: 0x490dc10 (libc.so.6:memcpy@@GLIBC_2.14) redirected to 0x483f220 (_vgnU_ifunc_wrapper)
+--5166-- REDIR: 0x4929370 (libc.so.6:wcschr) redirected to 0x483f220 (_vgnU_ifunc_wrapper)
+--5166-- REDIR: 0x490c260 (libc.so.6:index) redirected to 0x483f220 (_vgnU_ifunc_wrapper)
+--5166-- REDIR: 0x490c960 (libc.so.6:rindex) redirected to 0x483f220 (_vgnU_ifunc_wrapper)
+--5166-- REDIR: 0x490d5a0 (libc.so.6:memmove) redirected to 0x483f220 (_vgnU_ifunc_wrapper)
+==5166== Preferring higher priority redirection:
+--5166--     old: 0x04a045c0 (__memcpy_avx_unalign) R-> (2018.0) 0x04850f90 __memcpy_avx_unaligned_erms
+--5166--     new: 0x04a045c0 (__memcpy_avx_unalign) R-> (2018.1) 0x04852880 memmove
+--5166-- REDIR: 0x49293f0 (libc.so.6:wcscmp) redirected to 0x483f220 (_vgnU_ifunc_wrapper)
+--5166-- REDIR: 0x490d9e0 (libc.so.6:stpncpy) redirected to 0x483f220 (_vgnU_ifunc_wrapper)
+--5166-- REDIR: 0x49299b0 (libc.so.6:wmemchr) redirected to 0x483f220 (_vgnU_ifunc_wrapper)
+--5166-- REDIR: 0x490c830 (libc.so.6:strncmp) redirected to 0x483f220 (_vgnU_ifunc_wrapper)
+--5166-- REDIR: 0x490da70 (libc.so.6:strcasecmp) redirected to 0x483f220 (_vgnU_ifunc_wrapper)
+--5166-- REDIR: 0x490c420 (libc.so.6:strcspn) redirected to 0x483f220 (_vgnU_ifunc_wrapper)
+--5166-- REDIR: 0x4929470 (libc.so.6:wcscpy) redirected to 0x483f220 (_vgnU_ifunc_wrapper)
+--5166-- REDIR: 0x490c1d0 (libc.so.6:strcat) redirected to 0x483f220 (_vgnU_ifunc_wrapper)
+--5166-- REDIR: 0x490db60 (libc.so.6:strncasecmp_l) redirected to 0x483f220 (_vgnU_ifunc_wrapper)
+--5166-- REDIR: 0x490d480 (libc.so.6:bcmp) redirected to 0x483f220 (_vgnU_ifunc_wrapper)
+--5166-- REDIR: 0x4915570 (libc.so.6:memrchr) redirected to 0x483f220 (_vgnU_ifunc_wrapper)
+--5166-- REDIR: 0x490f010 (libc.so.6:strchrnul) redirected to 0x483f220 (_vgnU_ifunc_wrapper)
+--5166-- REDIR: 0x490c390 (libc.so.6:strcpy) redirected to 0x483f220 (_vgnU_ifunc_wrapper)
+--5166-- REDIR: 0x490db10 (libc.so.6:strcasecmp_l) redirected to 0x483f220 (_vgnU_ifunc_wrapper)
+--5166-- REDIR: 0x490c6a0 (libc.so.6:strlen) redirected to 0x483f220 (_vgnU_ifunc_wrapper)
+--5166-- REDIR: 0x490c8d0 (libc.so.6:strncpy) redirected to 0x483f220 (_vgnU_ifunc_wrapper)
+--5166-- REDIR: 0x490d950 (libc.so.6:stpcpy) redirected to 0x483f220 (_vgnU_ifunc_wrapper)
+--5166-- REDIR: 0x490d3f0 (libc.so.6:memchr) redirected to 0x483f220 (_vgnU_ifunc_wrapper)
+--5166-- REDIR: 0x490cb00 (libc.so.6:strspn) redirected to 0x483f220 (_vgnU_ifunc_wrapper)
+--5166-- REDIR: 0x490d7d0 (libc.so.6:mempcpy) redirected to 0x483f220 (_vgnU_ifunc_wrapper)
+--5166-- REDIR: 0x490dac0 (libc.so.6:strncasecmp) redirected to 0x483f220 (_vgnU_ifunc_wrapper)
+--5166-- REDIR: 0x490ef80 (libc.so.6:rawmemchr) redirected to 0x483f220 (_vgnU_ifunc_wrapper)
+--5166-- REDIR: 0x490c7a0 (libc.so.6:strncat) redirected to 0x483f220 (_vgnU_ifunc_wrapper)
+--5166-- REDIR: 0x4a01410 (libc.so.6:__strrchr_avx2) redirected to 0x484e810 (rindex)
+--5166-- REDIR: 0x4a015e0 (libc.so.6:__strlen_avx2) redirected to 0x484ed10 (strlen)
+--5166-- REDIR: 0x4a00f80 (libc.so.6:__strchr_avx2) redirected to 0x484e9f0 (index)
+--5166-- REDIR: 0x4a020a0 (libc.so.6:__strncat_avx2) redirected to 0x484ebc0 (strncat)
+--5166-- REDIR: 0x49090a0 (libc.so.6:malloc) redirected to 0x4848820 (malloc)
+--5166-- REDIR: 0x490cfc0 (libc.so.6:__GI_strstr) redirected to 0x4853ae0 (__strstr_sse2)
+--5166-- REDIR: 0x4a04d80 (libc.so.6:__memset_avx2_unaligned_erms) redirected to 0x4852770 (memset)
+--5166-- REDIR: 0x4a01200 (libc.so.6:__strchrnul_avx2) redirected to 0x4853330 (strchrnul)
+--5166-- REDIR: 0x4a04580 (libc.so.6:__mempcpy_avx_unaligned_erms) redirected to 0x4853440 (mempcpy)
+--5166-- REDIR: 0x490a520 (libc.so.6:calloc) redirected to 0x484d9d0 (calloc)
+--5166-- REDIR: 0x4a045c0 (libc.so.6:__memcpy_avx_unaligned_erms) redirected to 0x4852880 (memmove)
+==5166== Invalid write of size 2
+==5166==    at 0x109C9D: main (tftpclient.c:240)
+==5166==  Address 0x4a906e2 is 2 bytes inside a block of size 3 alloc'd
+==5166==    at 0x484DA83: calloc (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
+==5166==    by 0x109C50: main (tftpclient.c:235)
+==5166== 
+==5166== Syscall param socketcall.sendto(msg) points to unaddressable byte(s)
+==5166==    at 0x498B81A: sendto (sendto.c:27)
+==5166==    by 0x109CD0: main (tftpclient.c:242)
+==5166==  Address 0x4a906e3 is 0 bytes after a block of size 3 alloc'd
+==5166==    at 0x484DA83: calloc (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
+==5166==    by 0x109C50: main (tftpclient.c:235)
+==5166== 
+==5166== Invalid read of size 2
+==5166==    at 0x109D52: main (tftpclient.c:252)
+==5166==  Address 0x4a906e2 is 2 bytes inside a block of size 3 alloc'd
+==5166==    at 0x484DA83: calloc (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
+==5166==    by 0x109C50: main (tftpclient.c:235)
+==5166== 
+--5166-- REDIR: 0x49093e0 (libc.so.6:free) redirected to 0x484b210 (free)
+==5166== 
+==5166== HEAP SUMMARY:
+==5166==     in use at exit: 0 bytes in 0 blocks
+==5166==   total heap usage: 172 allocs, 172 frees, 6,099 bytes allocated
+==5166== 
+==5166== All heap blocks were freed -- no leaks are possible
+==5166== 
+==5166== ERROR SUMMARY: 676 errors from 3 contexts (suppressed: 0 from 0)
+==5166== 
+==5166== 169 errors in context 1 of 3:
+==5166== Invalid read of size 2
+==5166==    at 0x109D52: main (tftpclient.c:252)
+==5166==  Address 0x4a906e2 is 2 bytes inside a block of size 3 alloc'd
+==5166==    at 0x484DA83: calloc (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
+==5166==    by 0x109C50: main (tftpclient.c:235)
+==5166== 
+==5166== 
+==5166== 169 errors in context 2 of 3:
+==5166== Syscall param socketcall.sendto(msg) points to unaddressable byte(s)
+==5166==    at 0x498B81A: sendto (sendto.c:27)
+==5166==    by 0x109CD0: main (tftpclient.c:242)
+==5166==  Address 0x4a906e3 is 0 bytes after a block of size 3 alloc'd
+==5166==    at 0x484DA83: calloc (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
+==5166==    by 0x109C50: main (tftpclient.c:235)
+==5166== 
+==5166== 
+==5166== 338 errors in context 3 of 3:
+==5166== Invalid write of size 2
+==5166==    at 0x109C9D: main (tftpclient.c:240)
+==5166==  Address 0x4a906e2 is 2 bytes inside a block of size 3 alloc'd
+==5166==    at 0x484DA83: calloc (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
+==5166==    by 0x109C50: main (tftpclient.c:235)
+==5166== 
+==5166== ERROR SUMMARY: 676 errors from 3 contexts (suppressed: 0 from 0)

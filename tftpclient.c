@@ -23,7 +23,6 @@
 #define TIMEOUT_SECS                (int) 1
 #define MAX_RETRIES                 (int) 5
 
-static int data_recieved = 0;
 
 
 static void help(void);
@@ -34,18 +33,19 @@ int main(int argc, char* argv[])
 
     // Socket & IP vars
     struct sockaddr_in server;
-    int sock;   // Socket desriptor
+    int sock = 0;   // Socket desriptor
     char* file_path = NULL;  // -f <filename>
     uint8_t buffer[DEFAULT_DATA_SIZE_BYTES] = {'\0'};
     int data_packets_recieved = 0;
     int retry_count = 0;
     int all_data_recieved = 0;
+    int data_recieved = 0;
     
     server.sin_addr.s_addr = htonl(LAB_BROADCAST);
     server.sin_port = htons(port);
     server.sin_family = AF_INET;
 
-    char c;     // - char
+    char c = '\0';     // - char
 
     // Modification: Removed user ability to change output file name
     // -g for tftp get
@@ -88,10 +88,9 @@ int main(int argc, char* argv[])
     memcpy(buffer, &opcode, sizeof(uint16_t));
 
     // Put file name into packet
-    strncat(buffer + sizeof(uint16_t), file_path, sizeof(buffer) - sizeof(uint16_t) - 1);
-
+    strncat((char *)(buffer + sizeof(uint8_t)+sizeof(uint8_t)), file_path, sizeof(buffer) - sizeof(uint16_t) - 1);      
     // Put octet mode into buffer
-    strncat(buffer+sizeof(uint16_t) + strlen(file_path)+1, MODE, sizeof(buffer) - sizeof(uint16_t) - strlen(file_path) - 1);
+    strncat((char*)buffer+sizeof(uint16_t) + strlen(file_path)+1, MODE, sizeof(buffer) - sizeof(uint16_t) - strlen(file_path) - 1);
 
     // Calculate packet size
     int packet_size = sizeof(uint16_t) + strlen(file_path) + 1 + strlen(MODE) + 1;
@@ -188,7 +187,7 @@ int main(int argc, char* argv[])
                 data_recieved=0;
                 // Get error code and error message
                 uint16_t error_code = ntohs(*(uint16_t*)&buffer[sizeof(uint16_t)]);
-                char* error_msg = &buffer[sizeof(uint16_t) + sizeof(uint16_t)];
+                char* error_msg = (char*)buffer+sizeof(uint16_t) + sizeof(uint16_t);
 
                 // Print the error
                 printf("Error Code: %hu - %s\n", error_code, error_msg);
@@ -232,7 +231,7 @@ int main(int argc, char* argv[])
                 if (prev_ack) {
                     free(prev_ack);
                 }
-
+                
                 prev_ack = (uint8_t*)calloc(sizeof(buffer[0]) + sizeof(buffer[1]) + 1, sizeof(uint8_t));
                 memcpy(prev_ack, buffer, sizeof(buffer[0]) + sizeof(buffer[1]) + 1);
 
@@ -286,7 +285,6 @@ int main(int argc, char* argv[])
         free(prev_ack);
 
     }
-
 	// done
 	return 0;
 }

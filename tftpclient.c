@@ -175,7 +175,7 @@ int main(int argc, char* argv[])
         // Make sure there is a null terminator before trying to print
         // to console.  There is no expectation null would be included
         // in UDP payload.
-        (bytes_received < DEFAULT_DATA_SIZE_BYTES) ? (buffer[bytes_received] = '\0') : (buffer[DEFAULT_DATA_SIZE_BYTES - 1] = '\0');
+        (bytes_received <= DEFAULT_DATA_SIZE_BYTES) ? (buffer[bytes_received] = '\0') : (buffer[DEFAULT_DATA_SIZE_BYTES - 1] = '\0');
 
         // Only look at Least-significant-BYTE for opcode since should never be larger than 1 byte in value
         opcode = ntohs(*(uint16_t*)&buffer[0]);     
@@ -210,9 +210,9 @@ int main(int argc, char* argv[])
                     all_data_recieved = 1;
                 }
 
-                printf("Data size: %i\n", data_size);
                 /* Write data to local disk */
                 size_t bytes_written = fwrite(buffer + sizeof(uint16_t) + sizeof(uint16_t), 1, data_size, file);
+                printf("Buffer: %s",buffer+2*sizeof(uint16_t));
                 if (bytes_written != data_size) {
                     perror("Error writing to file");
                     fclose(file);
@@ -232,7 +232,7 @@ int main(int argc, char* argv[])
                     free(prev_ack);
                 }
                 
-                prev_ack = (uint8_t*)calloc(sizeof(buffer[0]) + sizeof(buffer[1]) + 1, sizeof(uint8_t));
+                prev_ack = (uint8_t*)calloc(sizeof(uint8_t) + sizeof(uint8_t), sizeof(uint16_t));
                 memcpy(prev_ack, buffer, sizeof(buffer[0]) + sizeof(buffer[1]) + 1);
 
                 // Set the block number in the ACK packet
@@ -248,8 +248,8 @@ int main(int argc, char* argv[])
                 }
 
 
-                printf("opcode: %d\n", ntohs(*(uint16_t*)&prev_ack[0]));
-                printf("Block Number: %d\n", ntohs(*(uint16_t*)&prev_ack[2]));
+                // printf("opcode: %d\n", ntohs(*(uint16_t*)&prev_ack[0]));
+                // printf("Block Number: %d\n", ntohs(*(uint16_t*)&prev_ack[2]));
                 break;
             default:
                 perror("Unsupported opcode from server\n");

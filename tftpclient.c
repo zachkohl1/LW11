@@ -179,7 +179,7 @@ int main(int argc, char* argv[])
 
         // Only look at Least-significant-BYTE for opcode since should never be larger than 1 byte in value
         opcode = ntohs(*(uint16_t*)&buffer[0]);     
-        printf("opcode: %d\n", opcode);   
+//        printf("opcode: %d\n", opcode);   
         
         switch(opcode)
         {
@@ -203,7 +203,7 @@ int main(int argc, char* argv[])
                 
 
                 /* Display Progress */
-                printf("Block: %i\t Data Size: %i\n", block_number,data_size);
+                printf("Block: %i\t Data Size: %i Bytes\n", block_number,data_size);
 
                 if(data_size < DEFAULT_DATA_SIZE_BYTES-4)
                 {
@@ -212,7 +212,7 @@ int main(int argc, char* argv[])
 
                 /* Write data to local disk */
                 size_t bytes_written = fwrite(buffer + sizeof(uint16_t) + sizeof(uint16_t), 1, data_size, file);
-                printf("Buffer: %s",buffer+2*sizeof(uint16_t));
+//                printf("Buffer: %s",buffer+2*sizeof(uint16_t));
                 if (bytes_written != data_size) {
                     perror("Error writing to file");
                     fclose(file);
@@ -220,7 +220,7 @@ int main(int argc, char* argv[])
                     free(prev_ack);
                     return 1;
                 }
-                printf("Bytes written: %li\n", bytes_written);
+//                printf("Bytes written: %li\n", bytes_written);
                 
                 /* Data recieved from server, so send ACK back */
                 // Only opcode is changed
